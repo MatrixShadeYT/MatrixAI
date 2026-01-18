@@ -1,1 +1,15 @@
-[]
+[
+    {
+        "weights": [],
+        "biases": []
+    },
+    {
+        "weights": [],
+        "biases": []
+    },
+    {
+        "weights": [],
+        "biases": []
+    },
+    "softmax"
+]
