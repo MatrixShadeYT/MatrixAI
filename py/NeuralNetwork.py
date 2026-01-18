@@ -1,34 +1,47 @@
 import numpy as np
 import json
 class AI:
-    def __init__(self,network):
-        self.sync(network)
-    def sync(self,file):
-        if type(file) == 'string':
-            with open(file,'r') as file:
-                self.network = json.load(file)
-        elif type(file) == list:
-            self.network = []
-            for i in file:
-                if type(file[i]) == string:
-                    if file[i] == 'relu':
-                        self.network.append(relu)
-                    elif file[i] == 'softmax':
-                        self.network.append(softmax)
-                    else:
-                        print(f'Error: {file[i]}')
-                elif type(file[i]) == dict:
-                    self.network.append(file[i])
-                else:
-                    print(f'Error: {file[i]}')
-        else:
+    def __init__(self,file):
+        self.file = file
+        self.load(file)
+    def run(self,inputs):
+        inputs = inputs
+        for i in range(len(self.network)):
+            if type(self.network[i]) == str:
+                if self.network[i] == 'relu':
+                    inputs = relu.forward(inputs)
+                elif self.network[i] == 'softmax':
+                    inputs = softmax.forward(inputs)
+            elif type(self.network[i]) == dict:
+                inputs = Layer(self.network[i],inputs)
+            else:
+                print('ERROR')
+        self.output = inputs
+        return self.output
+    def save(self,file):
+        if type(self.network) == list:
             with open(file,'w') as file:
                 json.dump(self.network,file,indent=4)
+    def load(self,file):
+        if type(file) == list:
+            self.network = file
+        elif type(file) == str:
+            with open(file,'r') as file:
+                self.network = json.load(file)
+        else:
+            self.network = [
+                {
+                    "weights": [0,0,0],
+                    "biases": [0,0,0]
+                },
+                "softmax"
+            ]
+            print('ERROR ON LOAD')
 
 class Layer:
     def __init__(self,network,inputs):
-        self.weights = network['weights']
-        self.biases = network['biases']
+        self.weights = np.array(network['weights'])
+        self.biases = np.array(network['biases'])
         self.output = self.forward(np.array(inputs))
     def forward(self,inputs):
         return np.dot(np.array(inputs),self.weights)+self.biases
@@ -51,10 +64,11 @@ class CategoricalCrossEntropy(Loss):
 # Activation Functions
 class relu:
     @staticmethod
-    def forward(inputs):
+    def forward(self,inputs):
         return np.maximum(0, np.array(inputs))
 class softmax:
     @staticmethod
     def forward(inputs):
         inputs = np.array(inputs)
-        return np.exp(inputs)/np.sum(np.exp(inputs),keepdims=True)
+        probabilities = np.exp(inputs,axis=1,keepdims=True)/np.sum(np.exp(inputs),axis=1,keepdims=True)
+        return probabilities
