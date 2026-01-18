@@ -1,4 +1,5 @@
-import numpy, json
+import numpy as np
+import json
 class AI:
     def __init__(self,network):
         self.sync(network)
@@ -26,32 +27,34 @@ class AI:
 
 class Layer:
     def __init__(self,network,inputs):
-        inputs = numpy.array(inputs)
         self.weights = network['weights']
         self.biases = network['biases']
-        self.output = self.forward(inputs)
+        self.output = self.forward(np.array(inputs))
     def forward(self,inputs):
-        return numpy.dot(inputs*self.weights)+self.biases
+        return np.dot(np.array(inputs),self.weights)+self.biases
 
+# Loss Functions
 class Loss:
     def calculate(self,outputs,true):
-        return numpy.mean(self.forward(output, true))
-
+        return np.mean(self.forward(np.array(outputs), np.array(true)))
 class CategoricalCrossEntropy(Loss):
     def forward(self,pred,true):
-        pred_clipped = numpy.clip(pred, 1e-7, 1-1e-7)
+        pred = np.array(pred)
+        true = np.array(true)
+        pred_clipped = np.clip(np.array(pred), 1e-7, 1-1e-7)
         if len(true.shape) == 1:
-            correct_confidences = pred_clipped[range(len(pred)),true]
+            correct_confidences = pred_clipped[range(len(pred))]
         elif len(true.shape) == 2:
-            correct_confidences = np.sum(pred_clipped*true, axis=1)
-        return -numpy.log(correct_confidences)
+            correct_confidences = np.sum(pred_clipped*true,axis=1)
+        return -np.log(correct_confidences)
 
+# Activation Functions
 class relu:
     @staticmethod
     def forward(inputs):
-        return numpy.max(0,inputs)
-
+        return np.maximum(0, np.array(inputs))
 class softmax:
     @staticmethod
     def forward(inputs):
-        return np.exp(inputs)/np.sum(np.exp(inputs),axis=1,keepdims=True)
+        inputs = np.array(inputs)
+        return np.exp(inputs)/np.sum(np.exp(inputs),keepdims=True)
